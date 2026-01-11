@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ランダム話題（質問）ジェネレーター</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#121b2f;
+      --card2:#0f172a;
+      --text:#e8eefc;
+      --muted:#a8b3cf;
+      --line:rgba(255,255,255,.10);
+      --danger:#fb7185;
+      --shadow: 0 16px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(122,167,255,.18), transparent 60%),
+                  radial-gradient(1000px 700px at 90% 10%, rgba(110,231,183,.14), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+    }
+    .wrap{ max-width: 980px; margin: 0 auto; padding: 18px 14px 28px; }
+    header{ padding: 8px 6px 14px; }
+    h1{ font-size: 20px; margin: 0 0 6px; letter-spacing: .2px; }
+    .sub{ color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0; }
+
+    .grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: 340px 1fr; align-items:start; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 35%), var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 60%);
+    }
+    .card .hd h2{
+      margin:0;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .card .bd{ padding: 14px; }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .row > *{ flex: 1; min-width: 120px; }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor:pointer;
+      transition: transform .06s ease, border-color .2s ease, background .2s ease;
+      text-align:center;
+      user-select:none;
+      touch-action: manipulation;
+    }
+    .btn:active{ transform: scale(.99); }
+    .btn.primary{
+      border-color: rgba(122,167,255,.55);
+      background: linear-gradient(180deg, rgba(122,167,255,.22), rgba(255,255,255,.02));
+    }
+    .btn.ghost{ background: transparent; }
+    .btn.danger{
+      border-color: rgba(251,113,133,.55);
+      background: linear-gradient(180deg, rgba(251,113,133,.16), rgba(255,255,255,.02));
+    }
+    .btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 8px 0 6px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    input[type="text"], textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background: rgba(15,23,42,.65);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 12px;
+      font-size: 14px;
+      outline:none;
+    }
+    textarea{ min-height: 88px; resize: vertical; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+    .chip{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor:pointer;
+      user-select:none;
+      touch-action: manipulation;
+    }
+    .chip[aria-pressed="true"]{
+      border-color: rgba(110,231,183,.65);
+      box-shadow: 0 0 0 3px rgba(110,231,183,.12);
+    }
+
+    .qbox{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 45%), var(--card2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .qtitle{ font-size: 13px; color: var(--muted); margin: 0 0 8px; font-weight: 800; }
+    .qtext{ font-size: 18px; line-height: 1.45; margin: 0 0 10px; font-weight: 900; letter-spacing: .2px; }
+    .meta{ display:flex; gap:8px; flex-wrap:wrap; margin-top: 8px; }
+    .badge{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,.02);
+    }
+    .divider{ height:1px; background: var(--line); margin: 12px 0; }
+
+    .ans{ display:grid; gap:10px; }
+    .ansCard{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .ansCard h3{ margin:0 0 6px; font-size: 13px; color: var(--muted); font-weight: 900; }
+    .ansCard p{ margin:0; white-space: pre-wrap; line-height: 1.6; font-size: 14px; }
+    .small{ font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 8px; }
+
+    .err{
+      border:1px solid rgba(251,113,133,.55);
+      background: rgba(251,113,133,.10);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px;
+      line-height: 1.6;
+      font-size: 13px;
+      display:none;
+    }
+    .err code{ color: #ffd1d9; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>ランダム話題（質問）ジェネレーター</h1>
+      <p class="sub">質問＋自己開示＋会話法（切り口）をランダム表示。カテゴリは複数付けられます。</p>
+    </header>
+
+    <main class="grid">
+      <!-- left -->
+      <section class="card">
+        <div class="hd"><h2>設定</h2></div>
+        <div class="bd">
+          <div class="err" id="errBox"></div>
+
+          <label>フィルタ（カテゴリ）</label>
+          <div class="chips" id="catChips"></div>
+
+          <label style="margin-top:12px;">検索（質問に含まれる文字）</label>
+          <input id="searchBox" type="text" placeholder="例）旅行 / バイト / 恋愛 など" />
+
+          <div class="divider"></div>
+
+          <div class="row">
+            <button class="btn primary" id="btnNext">🎲 ランダムで出す</button>
+            <button class="btn ghost" id="btnAnother">↻ もう1問</button>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <button class="btn" id="btnCopy">📋 まとめてコピー</button>
+            <button class="btn danger" id="btnReset">リセット</button>
+          </div>
+
+          <p class="small" id="statusText"></p>
+        </div>
+      </section>
+
+      <!-- right -->
+      <section class="card">
+        <div class="hd"><h2>表示</h2></div>
+        <div class="bd">
+          <div class="qbox">
+            <p class="qtitle">質問</p>
+            <p class="qtext" id="qText">読み込み中...</p>
+
+            <div class="meta" id="qMeta"></div>
+
+            <div class="divider"></div>
+
+            <div class="ans">
+              <div class="ansCard">
+                <h3>自己開示（自分の答え例）</h3>
+                <p id="myAnswer">読み込み中...</p>
+              </div>
+
+              <div class="ansCard">
+                <h3>自己開示（自分用にメモ）</h3>
+                <textarea id="myMemo" placeholder="自分の実体験に合わせて書き換え（ページ更新で消える）"></textarea>
+              </div>
+
+              <div class="ansCard">
+                <h3>会話法（ランダム）</h3>
+                <p id="methodName">読み込み中...</p>
+                <div class="divider"></div>
+                <p class="small" id="methodHow"></p>
+                <p class="small" id="methodExample"></p>
+              </div>
+            </div>
+          </div>
+
+          <p class="small">
+            ※質問は <code>data/questions.json</code>、自己開示は <code>data/self_answers.json</code>、会話法は <code>data/methods.json</code> を編集してください。
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>
